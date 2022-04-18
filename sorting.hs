@@ -60,30 +60,74 @@ merge lst1@(x:xs) lst2@(y:ys) = if x < y
                                 then x:(merge xs lst2)
                                 else y:(merge lst1 ys)
 
+-- Shell sorting
+gaps :: Int -> [Int]
+gaps n = reverse (takeWhile (< n) tokuda)
+
+tokuda :: [Int]
+tokuda = [gap n | n <- [1..]]
+
+gap :: (Integral a) => a -> a
+gap k = ceiling (gap' k)
+
+gap' :: (Integral a) => a -> Double
+gap' 1 = 1
+gap' k = 2.25 * gap' (k - 1) + 1
+
+
+shellSort :: (Ord a) => [a] -> [a]
+shellSort xs = shellSort' xs (gaps (length xs))
+
+shellSort' :: (Ord a) => [a] -> [Int] -> [a]
+shellSort' [] _ = []
+shellSort' [x] _ = [x]
+shellSort' l [] = l
+shellSort' l (g:gs) = shellSort' (combine [insertionSort (getSub l g i) | i <- [0..g-1]]) gs
+
+getSub :: (Ord a) => [a] -> Int -> Int -> [a]
+getSub [] _ _ = []
+getSub l g i = [l !! e | e <- [i, i+g..length l - 1]]
+
+combine :: [[a]] -> [a]
+combine [] = []
+combine l@(xs:_)
+        | length xs == 0 = []
+        | otherwise = [x | (x:_) <- l] ++ combine (map (drop 1) l)
 
 main = do
     putStrLn $ "Unsorted: " ++ show listToSort
-    
+  
+    putStrLn "\nBubble sort"
     a <- getCurrentTime
     putStrLn $ "Sorted: " ++ show (bubbleSort listToSort)
     b <- getCurrentTime
     putStrLn "This is time difference: "
     print(diffUTCTime b a)
     
+    putStrLn "\nInsertion sort"
     a <- getCurrentTime
     putStrLn $ "Sorted: " ++ show (insertionSort listToSort)
     b <- getCurrentTime
     putStrLn "This is time difference: "
     print(diffUTCTime b a)
     
+    putStrLn "\nSelection sort"
     a <- getCurrentTime
     putStrLn $ "Sorted: " ++ show (selectionSort listToSort)
     b <- getCurrentTime
     putStrLn "This is time difference: "
     print(diffUTCTime b a)
     
+    putStrLn "\nMerge sort"
     a <- getCurrentTime
     putStrLn $ "Sorted: " ++ show (mergeSort listToSort)
+    b <- getCurrentTime
+    putStrLn "This is time difference: "
+    print(diffUTCTime b a)
+    
+    putStrLn "\nShell Sort"
+    a <- getCurrentTime
+    putStrLn $ "Sorted: " ++ show (shellSort listToSort)
     b <- getCurrentTime
     putStrLn "This is time difference: "
     print(diffUTCTime b a)
